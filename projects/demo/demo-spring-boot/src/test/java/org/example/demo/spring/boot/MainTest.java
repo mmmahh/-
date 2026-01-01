@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.*;
 import java.lang.reflect.TypeVariable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class MainTest {
     enum A {
@@ -47,5 +49,60 @@ public class MainTest {
         TypeVariable<Class<Test2>>[] typeParameters = Test2.class.getTypeParameters();
         System.out.println();
 
+    }
+
+    @Test
+    public void test3() throws ExecutionException, InterruptedException {
+        CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+            throw new NullPointerException();
+            // System.out.println(Thread.currentThread().getName());
+        });
+
+        completableFuture.thenAccept(r -> System.out.println(r)).exceptionally(e -> {
+            e.printStackTrace();
+            return null;
+        });
+
+        completableFuture.whenComplete((r, e) -> {
+
+        });
+        completableFuture.handle((r, e) -> {
+            return null;
+        });
+        completableFuture.exceptionally(e -> {
+            return null;
+        });
+
+
+
+
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> "hello")
+                .thenCompose(r -> CompletableFuture.supplyAsync(() -> r + " world"));
+
+        CompletableFuture<Void> future1 = CompletableFuture.allOf(
+                CompletableFuture.supplyAsync(() -> "hello"),
+                CompletableFuture.supplyAsync(() -> " world"));
+                // CompletableFuture.supplyAsync();
+
+
+        // Thread.sleep(5000);
+        System.out.println(future.get());
+    }
+
+    @Test
+    public void test4() throws ExecutionException, InterruptedException {
+        CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+                    throw new NullPointerException();
+                })
+                .thenRun(() -> System.out.println("hello"))
+                .exceptionally(e -> {
+                    e.printStackTrace();
+                    return null;
+                });
+
+        Object o = future.get();
+        // System.out.println(o);
+        Thread.sleep(2000);
+        System.out.println("end");
     }
 }
